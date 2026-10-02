@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simple Tasks</title>
+<style>
+body{margin:0;background:#f3f6f4;color:#1d2b26;font:16px/1.5 Georgia,serif}
+main{max-width:520px;margin:0 auto;padding:2.5rem 1rem}
+h1{font-size:2rem;margin:0 0 .25rem}
+p.sub{margin:0 0 1.5rem;color:#6b7b74}
+form{display:flex;gap:.5rem}
+input[type=text]{flex:1;min-width:0;padding:.7rem;border:1px solid #d5dfda;border-radius:6px;font:inherit}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid #d5dfda;background:#fff;padding:.5rem .8rem}
+button.primary{background:#2f6f5e;color:#fff;border-color:#2f6f5e}
+ul{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid #d5dfda}
+li{display:flex;align-items:center;gap:.6rem;padding:.7rem 0;border-bottom:1px solid #d5dfda}
+li span{flex:1}
+li.done span{text-decoration:line-through;color:#6b7b74}
+.empty{color:#6b7b74}
+footer{margin-top:1rem;display:flex;justify-content:space-between;color:#6b7b74;font-size:.9rem}
+footer button{border:none;background:none;text-decoration:underline;padding:0;color:#6b7b74}
+</style>
+</head>
+<body>
+<main>
+  <h1>Tasks Records</h1>
+  <p class="sub">Add a task, check it off, delete it when you're done.</p>
+  <form id="f">
+    <input id="t" type="text" placeholder="What needs doing?" required autocomplete="off">
+    <button class="primary" type="submit">Add task</button>
+  </form>
+  <ul id="list"></ul>
+  <footer><span id="count"></span><button id="clear" type="button">Clear completed</button></footer>
+</main>
+<script>
+var tasks=[];
+try{tasks=JSON.parse(localStorage.getItem("tasks")||"[]")}catch(e){tasks=[]}
+function save(){try{localStorage.setItem("tasks",JSON.stringify(tasks))}catch(e){}}
+function render(){
+  var ul=document.getElementById("list");ul.innerHTML="";
+  if(!tasks.length){var e=document.createElement("li");e.className="empty";e.textContent="No tasks yet. Add your first one above.";ul.appendChild(e)}
+  tasks.forEach(function(t,i){
+    var li=document.createElement("li");if(t.done)li.className="done";
+    var c=document.createElement("input");c.type="checkbox";c.checked=t.done;
+    c.onchange=function(){t.done=c.checked;save();render()};
+    var s=document.createElement("span");s.textContent=t.title;
+    var d=document.createElement("button");d.textContent="Delete";
+    d.onclick=function(){tasks.splice(i,1);save();render()};
+    li.append(c,s,d);ul.appendChild(li);
+  });
+  var left=tasks.filter(function(t){return!t.done}).length;
+  document.getElementById("count").textContent=left+" left";
+}
+document.getElementById("f").onsubmit=function(ev){
+  ev.preventDefault();var i=document.getElementById("t"),v=i.value.trim();
+  if(!v)return;tasks.unshift({title:v,done:false});i.value="";save();render();
+};
+document.getElementById("clear").onclick=function(){tasks=tasks.filter(function(t){return!t.done});save();render()};
+render();
+</script>
+</body>
+</html>
